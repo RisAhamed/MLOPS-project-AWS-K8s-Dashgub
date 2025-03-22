@@ -27,14 +27,15 @@ def load_data(data_path:str)->pd.DataFrame:
         raise e
 
 
-def save_data(df:pd.DataFrame,output_path:str):
+def save_data(df: pd.DataFrame, output_path: str):
     try:
-        os.makedirs(os.path.dirname(output_path),exist_ok=True)
-        df.to_csv(output_path,index =False)
-        logging.info(f"saved data successfully to {output_path}")
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)  # Ensure dir exists
+        df.to_csv(output_path, index=False)
+        logging.info(f"Saved data successfully to {output_path}")
     except Exception as e:
         logging.exception(f"Error saving data to {output_path}: {e}")
         raise e
+
     
 
 def apply_bow(train_df:pd.DataFrame,test_df:pd.DataFrame,max_features:int)->tuple:
@@ -79,4 +80,7 @@ def main():
         raise e
 
 def feature_engineering():
+    main()
+
+if __name__=="__main__":
     main()
