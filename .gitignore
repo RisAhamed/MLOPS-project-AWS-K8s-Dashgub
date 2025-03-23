@@ -175,4 +175,3 @@ cython_debug/
 Notebooks/
 notebooks/
 local_s3/
-data/
