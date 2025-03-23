@@ -29,6 +29,6 @@ jobs:
 
       - name: dvc test
         env:
-          MLOPS_TEST : ${{ secrets.MLOPS_TEST }}
+          MLOPS_PROJECT : ${{ secrets.MLOPS_PROJECT }}
         run: |
               dvc repro
