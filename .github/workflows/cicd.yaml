@@ -27,4 +27,6 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-     
+      - name: dvc test
+        run: |
+              dvc repro
