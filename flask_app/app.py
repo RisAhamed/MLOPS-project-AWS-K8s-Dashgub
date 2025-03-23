@@ -85,8 +85,10 @@ def get_latest_model_version(model_name):
     """Fetch the latest model version from MLflow."""
     try:
         client = mlflow.MlflowClient()
-        versions = client.get_latest_versions(model_name, stages=["None"])
-        return versions[0].version if versions else None
+        latest_version = client.get_latest_versions(model_name, stages=["Production"])
+        if not latest_version:
+            latest_version = client.get_latest_versions(model_name, stages=["None"])
+        return latest_version[0].version if latest_version else None
     except Exception as e:
         print(f"Error fetching model version: {e}")
         return None

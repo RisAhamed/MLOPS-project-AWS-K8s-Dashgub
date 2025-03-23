@@ -30,7 +30,7 @@ class TestModelLoading(unittest.TestCase):
 
         # Define model details
         cls.new_model_name = "MLOPS-1"
-        cls.new_model_version = cls.get_latest_model_version(cls.new_model_name)
+        cls.new_model_version = cls.get_latest_model_version(cls.new_model_name,)
         if not cls.new_model_version:
             raise ValueError(f"No versions found for model {cls.new_model_name}")
         cls.new_model_uri = f"models:/{cls.new_model_name}/{cls.new_model_version}"
@@ -69,13 +69,14 @@ class TestModelLoading(unittest.TestCase):
         cls.holdout_data = pd.read_csv(holdout_data_path)
 
     @staticmethod
-    def get_latest_model_version(model_name):
+    def get_latest_model_version(model_name, stage="Staging"):
         client = mlflow.MlflowClient()
-        versions = client.search_model_versions(f"name='{model_name}'")
-        if not versions:
-            return None
-        latest_version = max(versions, key=lambda v: int(v.version))
-        return latest_version.version
+        latest_version = client.get_latest_versions(model_name, stages=[stage])
+        return latest_version[0].version if latest_version else None
+        # if not versions:
+        #     return None
+        # latest_version = max(versions, key=lambda v: int(v.version))
+        # return latest_version.version
     
 
     def test_model_loaded_properly(self):
