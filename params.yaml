@@ -1,9 +1,9 @@
 # params.yaml
 data_ingestion:
-  test_size: 0.28
+  test_size: 0.30
   
   data_path_url: 'https://raw.githubusercontent.com/vikashishere/Datasets/refs/heads/main/data.csv'
   data_path: './data'
 
 feature_engineering:
-  max_features: 40
+  max_features: 20
