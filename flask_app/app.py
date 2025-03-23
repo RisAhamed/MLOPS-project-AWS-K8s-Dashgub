@@ -14,8 +14,12 @@ import warnings
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 
+# Get the absolute path to the project root directory
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 # Load environment variables
-load_dotenv()
+dotenv_path = os.path.join(project_root, '.env')
+load_dotenv(dotenv_path)
 
 # Suppress warnings
 warnings.simplefilter("ignore", UserWarning)
@@ -74,32 +78,44 @@ repo_name = "MLOPS-project-AWS-K8s-Dashgub"
 mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # -------------------------------------------------------------------------------------
 
-# dagshub.init(repo_owner="RisAhamed", repo_name="MLOPS-project-AWS-K8s-Dashgub", mlflow=True)
-# mlflow.set_tracking_uri("https://dagshub.com/RisAhamed/MLOPS-project-AWS-K8s-Dashgub.mlflow")
 mlflow.set_experiment("model_evaluation_dvc")
 
 # Get latest model version dynamically
 def get_latest_model_version(model_name):
     """Fetch the latest model version from MLflow."""
-    client = mlflow.MlflowClient()
-    versions = client.get_latest_versions(model_name, stages=["None"])
-    return versions[0].version if versions else None
+    try:
+        client = mlflow.MlflowClient()
+        versions = client.get_latest_versions(model_name, stages=["None"])
+        return versions[0].version if versions else None
+    except Exception as e:
+        print(f"Error fetching model version: {e}")
+        return None
 
-# Load MLflow model
-model_name = "MLOPS-1"
-model_version = get_latest_model_version(model_name)
-if model_version is None:
-    raise RuntimeError(f"No available version for model: {model_name}")
-
-model_uri = f"models:/{model_name}/{model_version}"
-print(f"Fetching model from: {model_uri}")
+# Try to load MLflow model, with fallback to local model
 try:
-    model = mlflow.pyfunc.load_model(model_uri)
+    model_name = "MLOPS-1"
+    model_version = get_latest_model_version(model_name)
+    
+    if model_version is not None:
+        model_uri = f"models:/{model_name}/{model_version}"
+        print(f"Fetching model from MLflow: {model_uri}")
+        model = mlflow.pyfunc.load_model(model_uri)
+    else:
+        # Fallback to local model
+        local_model_path = os.path.join(project_root, "models", "model.pkl")
+        print(f"Falling back to local model: {local_model_path}")
+        with open(local_model_path, "rb") as f:
+            model = pickle.load(f)
 except Exception as e:
-    raise RuntimeError(f"Failed to load MLflow model: {e}")
+    print(f"Error loading model: {e}")
+    # Final fallback - load local model
+    local_model_path = os.path.join(project_root, "models", "model.pkl")
+    print(f"Falling back to local model: {local_model_path}")
+    with open(local_model_path, "rb") as f:
+        model = pickle.load(f)
 
-# Load vectorizer
-vectorizer_path = os.path.join("models", "vectorizer.pkl")
+# Load vectorizer with absolute path
+vectorizer_path = os.path.join(project_root, "models", "vectorizer.pkl")
 if not os.path.exists(vectorizer_path):
     raise FileNotFoundError(f"Vectorizer file not found: {vectorizer_path}")
 
@@ -108,6 +124,10 @@ with open(vectorizer_path, "rb") as f:
 
 # Initialize Flask App
 app = Flask(__name__)
+
+# Set template folder with absolute path
+template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+app.template_folder = template_dir
 
 # Custom Prometheus Metrics
 registry = CollectorRegistry()

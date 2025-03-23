@@ -42,13 +42,25 @@ class TestModelLoading(unittest.TestCase):
         except Exception as e:
             print(f"Failed to load model after retries: {e}")
             raise
-
+        
         # Load vectorizer
-        vectorizer_path = os.path.join("models", "vectorizer.pkl")
+# ... existing code ...
+
+# Get the absolute path to the project root directory
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+        vectorizer_path = os.path.join(project_root, "models", "vectorizer.pkl")
         if not os.path.exists(vectorizer_path):
-            raise FileNotFoundError(f"Vectorizer file not found at {vectorizer_path}")
+            raise FileNotFoundError(f"Vectorizer file not found: {vectorizer_path}")
+
         with open(vectorizer_path, "rb") as f:
             cls.vectorizer = pickle.load(f)
+
+        # vectorizer_path = os.path.join("models", "vectorizer.pkl")
+        # if not os.path.exists(vectorizer_path):
+        #     raise FileNotFoundError(f"Vectorizer file not found at {vectorizer_path}")
+        # with open(vectorizer_path, "rb") as f:
+        #     cls.vectorizer = pickle.load(f)
 
         # Load holdout data
         holdout_data_path = os.path.join("data", "processed", "test_bow.csv")
