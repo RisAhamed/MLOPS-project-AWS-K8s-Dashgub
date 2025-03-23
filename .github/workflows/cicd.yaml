@@ -32,7 +32,11 @@ jobs:
           MLOPS_PROJECT : ${{ secrets.MLOPS_PROJECT }}
         run: |
               dvc repro
-
+      # - name: Debug MLflow Artifacts
+      #   env:
+      #     MLOPS_PROJECT: ${{ secrets.MLOPS_PROJECT }}
+      #   run: |
+      #     python -c "from mlflow.tracking import MlflowClient; client = MlflowClient(); run = client.get_run('71de64d4e0c043bb97556c6e4ad21a50'); print(run.info.artifact_uri)"
       - name: Run model tests
         env:
           MLOPS_PROJECT: ${{ secrets.MLOPS_PROJECT }}

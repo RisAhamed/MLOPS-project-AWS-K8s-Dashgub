@@ -71,16 +71,12 @@ class TestModelLoading(unittest.TestCase):
     @staticmethod
     def get_latest_model_version(model_name):
         client = mlflow.MlflowClient()
-        latest_version = client.get_latest_versions(model_name)
-        return latest_version[0].version if latest_version else None
-    # @staticmethod
-    # def get_latest_model_version(model_name):
-    #     client = mlflow.MlflowClient()
-    #     versions = client.search_model_versions(f"name='{model_name}'")
-    #     if not versions:
-    #         return None
-    #     latest_version = max(versions, key=lambda v: int(v.version))
-    #     return latest_version.version
+        versions = client.search_model_versions(f"name='{model_name}'")
+        if not versions:
+            return None
+        latest_version = max(versions, key=lambda v: int(v.version))
+        return latest_version.version
+    
 
     def test_model_loaded_properly(self):
         self.assertIsNotNone(self.new_model, "Model failed to load from MLflow")
