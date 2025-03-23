@@ -69,7 +69,7 @@ def register_model(model_name: str, model_info: dict):
 
 def main():
     try:
-        model_info_path = 'reports\model_info.json'
+        model_info_path = r"reports//model_info.json"
         model_info = load_model_info(model_info_path)
         
         model_name = "MLOPS-1"
