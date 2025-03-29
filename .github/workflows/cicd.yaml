@@ -28,10 +28,17 @@ jobs:
           pip install -r requirements.txt
           pip install dvc dvc-gdrive dvc-s3 python-dotenv
 
+      - name: Configure DagsHub credentials
+        run: |
+          mkdir -p ~/.config/dagshub
+          echo "[auth]" > ~/.config/dagshub/credentials.ini
+          echo "token = ${{ secrets.MLOPS_PROJECT }}" >> ~/.config/dagshub/credentials.ini
+
       - name: dvc test
         env:
           MLOPS_PROJECT: ${{ secrets.MLOPS_PROJECT }}
           PYTHONPATH: ${{ github.workspace }}
+          DAGSHUB_TOKEN: ${{ secrets.MLOPS_PROJECT }}
         run: |
           dvc repro
       
@@ -40,6 +47,7 @@ jobs:
         env:
           MLOPS_PROJECT: ${{ secrets.MLOPS_PROJECT }}
           PYTHONPATH: ${{ github.workspace }}
+          DAGSHUB_TOKEN: ${{ secrets.MLOPS_PROJECT }}
         run: python scripts/promote_model.py
 
       - name: Run Flask app tests

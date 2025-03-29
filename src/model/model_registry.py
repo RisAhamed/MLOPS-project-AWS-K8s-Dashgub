@@ -5,14 +5,11 @@ import logging
 import yaml
 from src.logger import logging
 import os
-import dagshub
 import warnings
 warnings.simplefilter("ignore", UserWarning)
 warnings.filterwarnings("ignore")
 
-# Below code block is for production use
-# -------------------------------------------------------------------------------------
-# Set up DagsHub credentials for MLflow tracking
+# Set up MLflow tracking with token-based auth
 dagshub_token = os.getenv("MLOPS_PROJECT")
 if not dagshub_token:
     raise EnvironmentError("MLOPS_PROJECT environment variable is not set")
@@ -27,10 +24,8 @@ repo_name = "MLOPS-project-AWS-K8s-Dashgub"
 mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # -------------------------------------------------------------------------------------
 
-tracking_uri = os.getenv("MLFLOW_URL")
-# mlflow.set_tracking_uri(tracking_uri)
-dagshub.init(repo_owner='RisAhamed', repo_name='MLOPS-project-AWS-K8s-Dashgub', mlflow=True)
-
+# Remove the dagshub.init call that's causing the OAuth flow
+# dagshub.init(repo_owner='RisAhamed', repo_name='MLOPS-project-AWS-K8s-Dashgub', mlflow=True)
 
 def load_model_info(file_path: str) -> dict:
     """Load the model info from a JSON file."""

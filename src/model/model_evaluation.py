@@ -6,14 +6,12 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_a
 import logging
 import mlflow
 import mlflow.sklearn
-import dagshub
 import os
 from src.logger import logging
 from dotenv import load_dotenv
 load_dotenv()
 
-
-# Set up DagsHub credentials for MLflow tracking
+# Set up MLflow tracking with token-based auth
 dagshub_token = os.getenv("MLOPS_PROJECT")
 if not dagshub_token:
     raise EnvironmentError("MLOPS_PROJECT environment variable is not set")
@@ -28,10 +26,8 @@ repo_name = "MLOPS-project-AWS-K8s-Dashgub"
 mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # -------------------------------------------------------------------------------------
 
-
-tracking_uri = os.getenv("MLFLOW_URL")
-# mlflow.set_tracking_uri(tracking_uri)
-dagshub.init(repo_owner='RisAhamed', repo_name='MLOPS-project-AWS-K8s-Dashgub', mlflow=True)
+# Remove the dagshub.init call that's causing the OAuth flow
+# dagshub.init(repo_owner='RisAhamed', repo_name='MLOPS-project-AWS-K8s-Dashgub', mlflow=True)
 
 def load_model(model_path:str)->pickle:
     try:
