@@ -10,7 +10,8 @@ from nltk.corpus import stopwords
 import string
 import re
 import dagshub
-
+from dotenv import load_dotenv
+load_dotenv()
 import warnings
 warnings.simplefilter("ignore", UserWarning)
 warnings.filterwarnings("ignore")
@@ -95,12 +96,23 @@ import mlflow.pyfunc
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Set up MLflow
-dagshub.init(repo_owner="RisAhamed", repo_name="MLOPS-project-AWS-K8s-Dashgub", mlflow=True)
-mlflow.set_tracking_uri("https://dagshub.com/RisAhamed/MLOPS-project-AWS-K8s-Dashgub.mlflow")
-mlflow.set_experiment("model_evaluation_dvc")
+# dagshub.init(repo_owner="RisAhamed", repo_name="MLOPS-project-AWS-K8s-Dashgub", mlflow=True)
+# mlflow.set_tracking_uri("https://dagshub.com/RisAhamed/MLOPS-project-AWS-K8s-Dashgub.mlflow")
+# mlflow.set_experiment("model_evaluation_dvc")
 
 
+dagshub_token = os.getenv("MLOPS_PROJECT")
+if not dagshub_token:
+        raise EnvironmentError("MLOPS_PROJECT environment variable is not set")
 
+os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+
+dagshub_url = "https://dagshub.com"
+repo_owner = "RisAhamed"
+repo_name = "MLOPS-project-AWS-K8s-Dashgub"
+# Set up MLflow tracking URI
+mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # Model loading with retry
 model_name = "MLOPS-1"
 
