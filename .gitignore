@@ -175,3 +175,9 @@ cython_debug/
 Notebooks/
 notebooks/
 local_s3/
+
+# Ignore everything in the root data folder
+/data/*
+
+# But keep track of src/data
+!src/data/

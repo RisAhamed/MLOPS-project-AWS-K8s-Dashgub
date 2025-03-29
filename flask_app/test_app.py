@@ -99,12 +99,7 @@ dagshub.init(repo_owner="RisAhamed", repo_name="MLOPS-project-AWS-K8s-Dashgub", 
 mlflow.set_tracking_uri("https://dagshub.com/RisAhamed/MLOPS-project-AWS-K8s-Dashgub.mlflow")
 mlflow.set_experiment("model_evaluation_dvc")
 
-# Authentication
-# dagshub_token = os.getenv("CAPSTONE_TEST")
-# if not dagshub_token:
-#     raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
-# os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
-# os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+
 
 # Model loading with retry
 model_name = "MLOPS-1"

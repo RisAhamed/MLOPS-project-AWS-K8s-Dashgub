@@ -29,9 +29,9 @@ mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # -------------------------------------------------------------------------------------
 
 
-# tracking_uri = os.getenv("MLFLOW_URL")
+tracking_uri = os.getenv("MLFLOW_URL")
 # mlflow.set_tracking_uri(tracking_uri)
-# dagshub.init(repo_owner='RisAhamed', repo_name='MLOPS-project-AWS-K8s-Dashgub', mlflow=True)
+dagshub.init(repo_owner='RisAhamed', repo_name='MLOPS-project-AWS-K8s-Dashgub', mlflow=True)
 
 def load_model(model_path:str)->pickle:
     try:
