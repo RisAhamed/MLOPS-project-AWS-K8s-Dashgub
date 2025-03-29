@@ -30,19 +30,22 @@ jobs:
 
       - name: dvc test
         env:
-          MLOPS_PROJECT : ${{ secrets.MLOPS_PROJECT }}
+          MLOPS_PROJECT: ${{ secrets.MLOPS_PROJECT }}
+          PYTHONPATH: ${{ github.workspace }}
         run: |
-              dvc repro
+          dvc repro
       
       - name: Promote model to production
         if: success()
         env:
           MLOPS_PROJECT: ${{ secrets.MLOPS_PROJECT }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/promote_model.py
 
       - name: Run Flask app tests
         if: success()
         env:
           MLOPS_PROJECT: ${{ secrets.MLOPS_PROJECT }}
+          PYTHONPATH: ${{ github.workspace }}
         run: python -m unittest tests/test_flask_app.py
       

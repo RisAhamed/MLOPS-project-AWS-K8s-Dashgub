@@ -9,9 +9,13 @@ pd.set_option('future.no_silent_downcasting', True)
 from dotenv import load_dotenv
 load_dotenv()
 import os
+import sys
+
+# Add the project root directory to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from sklearn.model_selection import train_test_split
 import yaml
-import logging
 from src.logger import logging
 from src.connections import s3_connection
 
