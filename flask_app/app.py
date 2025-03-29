@@ -5,23 +5,13 @@ import os
 import pandas as pd
 from prometheus_client import Counter, Histogram, generate_latest, CollectorRegistry, CONTENT_TYPE_LATEST
 import time
-import re
-import string
-import numpy as np
-import dagshub
-from dotenv import load_dotenv
-import warnings
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
+import string
+import re
+import numpy as np
+import warnings
 
-# Get the absolute path to the project root directory
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# Load environment variables
-dotenv_path = os.path.join(project_root, '.env')
-load_dotenv(dotenv_path)
-
-# Suppress warnings
 warnings.simplefilter("ignore", UserWarning)
 warnings.filterwarnings("ignore")
 
@@ -29,28 +19,38 @@ warnings.filterwarnings("ignore")
 def lemmatization(text):
     """Lemmatize the text."""
     lemmatizer = WordNetLemmatizer()
-    return " ".join([lemmatizer.lemmatize(word) for word in text.split()])
+    text = text.split()
+    text = [lemmatizer.lemmatize(word) for word in text]
+    return " ".join(text)
 
 def remove_stop_words(text):
     """Remove stop words from the text."""
     stop_words = set(stopwords.words("english"))
-    return " ".join([word for word in text.split() if word not in stop_words])
+    text = [word for word in str(text).split() if word not in stop_words]
+    return " ".join(text)
 
 def removing_numbers(text):
     """Remove numbers from the text."""
-    return ''.join([char for char in text if not char.isdigit()])
+    text = ''.join([char for char in text if not char.isdigit()])
+    return text
 
 def lower_case(text):
-    """Convert text to lowercase."""
-    return text.lower()
+    """Convert text to lower case."""
+    text = text.split()
+    text = [word.lower() for word in text]
+    return " ".join(text)
 
 def removing_punctuations(text):
     """Remove punctuations from the text."""
-    return re.sub(r'[%s]' % re.escape(string.punctuation), ' ', text).strip()
+    text = re.sub('[%s]' % re.escape(string.punctuation), ' ', text)
+    text = text.replace('؛', "")
+    text = re.sub('\s+', ' ', text).strip()
+    return text
 
 def removing_urls(text):
     """Remove URLs from the text."""
-    return re.sub(r'https?://\S+|www\.\S+', '', text)
+    url_pattern = re.compile(r'https?://\S+|www\.\S+')
+    return url_pattern.sub(r'', text)
 
 def normalize_text(text):
     """Apply text normalization pipeline."""
@@ -62,25 +62,30 @@ def normalize_text(text):
     text = lemmatization(text)
     return text
 
-# Initialize MLflow & DagsHub
-# Set up DagsHub credentials for MLflow tracking
+# MLflow setup
 dagshub_token = os.getenv("MLOPS_PROJECT")
-if not dagshub_token:
-    raise EnvironmentError("MLOPS_PROJECT environment variable is not set")
+if dagshub_token:
+    os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+    
+    dagshub_url = "https://dagshub.com"
+    repo_owner = "RisAhamed"
+    repo_name = "MLOPS-project-AWS-K8s-Dashgub"
+    mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
+    print(f"MLflow tracking URI set to: {mlflow.get_tracking_uri()}")
+else:
+    print("MLOPS_PROJECT environment variable not set, MLflow tracking disabled")
 
-os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
-os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+# Initialize Flask app
+app = Flask(__name__)
 
-dagshub_url = "https://dagshub.com"
-repo_owner = "RisAhamed"
-repo_name = "MLOPS-project-AWS-K8s-Dashgub"
-# Set up MLflow tracking URI
-mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
-# -------------------------------------------------------------------------------------
+# Create a custom registry for Prometheus
+registry = CollectorRegistry()
+REQUEST_COUNT = Counter("app_request_count", "Total number of requests", ["method", "endpoint"], registry=registry)
+REQUEST_LATENCY = Histogram("app_request_latency_seconds", "Latency of requests", ["endpoint"], registry=registry)
+PREDICTION_COUNT = Counter("model_prediction_count", "Count of predictions", ["prediction"], registry=registry)
 
-mlflow.set_experiment("model_evaluation_dvc")
-
-# Get latest model version dynamically
+# Model and vectorizer setup
 def get_latest_model_version(model_name):
     """Fetch the latest model version from MLflow."""
     try:
@@ -93,49 +98,47 @@ def get_latest_model_version(model_name):
         print(f"Error fetching model version: {e}")
         return None
 
-# Try to load MLflow model, with fallback to local model
+# Load model with fallback options
 try:
     model_name = "MLOPS-1"
     model_version = get_latest_model_version(model_name)
     
-    if model_version is not None:
+    if model_version:
         model_uri = f"models:/{model_name}/{model_version}"
         print(f"Fetching model from MLflow: {model_uri}")
         model = mlflow.pyfunc.load_model(model_uri)
     else:
-        # Fallback to local model
-        local_model_path = os.path.join(project_root, "models", "model.pkl")
-        print(f"Falling back to local model: {local_model_path}")
-        with open(local_model_path, "rb") as f:
-            model = pickle.load(f)
+        raise ValueError("No model version found")
 except Exception as e:
-    print(f"Error loading model: {e}")
-    # Final fallback - load local model
-    local_model_path = os.path.join(project_root, "models", "model.pkl")
-    print(f"Falling back to local model: {local_model_path}")
-    with open(local_model_path, "rb") as f:
-        model = pickle.load(f)
+    print(f"MLflow model loading failed: {e}")
+    try:
+        # Try Docker container path first
+        if os.path.exists("/app/models/model.pkl"):
+            model_path = "/app/models/model.pkl"
+        else:
+            model_path = "models/model.pkl"
+        
+        print(f"Loading model from local file: {model_path}")
+        with open(model_path, "rb") as f:
+            model = pickle.load(f)
+    except Exception as e2:
+        print(f"Local model loading failed: {e2}")
+        raise RuntimeError(f"Failed to load model: {e2}")
 
-# Load vectorizer with absolute path
-vectorizer_path = os.path.join(project_root, "models", "vectorizer.pkl")
-if not os.path.exists(vectorizer_path):
-    raise FileNotFoundError(f"Vectorizer file not found: {vectorizer_path}")
-
-with open(vectorizer_path, "rb") as f:
-    vectorizer = pickle.load(f)
-
-# Initialize Flask App
-app = Flask(__name__)
-
-# Set template folder with absolute path
-template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-app.template_folder = template_dir
-
-# Custom Prometheus Metrics
-registry = CollectorRegistry()
-REQUEST_COUNT = Counter("app_request_count", "Total number of requests", ["method", "endpoint"], registry=registry)
-REQUEST_LATENCY = Histogram("app_request_latency_seconds", "Latency of requests", ["endpoint"], registry=registry)
-PREDICTION_COUNT = Counter("model_prediction_count", "Count of predictions", ["prediction"], registry=registry)
+# Load vectorizer
+try:
+    # Try Docker container path first
+    if os.path.exists("/app/models/vectorizer.pkl"):
+        vectorizer_path = "/app/models/vectorizer.pkl"
+    else:
+        vectorizer_path = "models/vectorizer.pkl"
+    
+    print(f"Loading vectorizer from: {vectorizer_path}")
+    with open(vectorizer_path, "rb") as f:
+        vectorizer = pickle.load(f)
+except Exception as e:
+    print(f"Error loading vectorizer: {e}")
+    raise RuntimeError(f"Failed to load vectorizer: {e}")
 
 # Routes
 @app.route("/")
@@ -154,19 +157,18 @@ def predict():
     text = request.form["text"]
     cleaned_text = normalize_text(text)
 
-    # Convert text to features
+    # Convert to features
     features = vectorizer.transform([cleaned_text])
     features_df = pd.DataFrame(features.toarray(), columns=[str(i) for i in range(features.shape[1])])
 
     # Predict
     try:
         prediction = model.predict(features_df)[0]
+        PREDICTION_COUNT.labels(prediction=str(prediction)).inc()
     except Exception as e:
         return render_template("index.html", result=f"Prediction Error: {str(e)}")
 
-    PREDICTION_COUNT.labels(prediction=str(prediction)).inc()
     REQUEST_LATENCY.labels(endpoint="/predict").observe(time.time() - start_time)
-    
     return render_template("index.html", result=prediction)
 
 @app.route("/metrics", methods=["GET"])
