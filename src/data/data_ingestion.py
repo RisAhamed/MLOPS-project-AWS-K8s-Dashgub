@@ -6,7 +6,8 @@ from dotenv import find_dotenv, load_dotenv
 import numpy as np
 import pandas as pd
 pd.set_option('future.no_silent_downcasting', True)
-
+from dotenv import load_dotenv
+load_dotenv()
 import os
 from sklearn.model_selection import train_test_split
 import yaml
@@ -86,8 +87,7 @@ def main():
         test_size = params['data_ingestion']['test_size']
 
         df = read_data(data_path_url=params['data_ingestion']['data_path_url'])
-        from dotenv import load_dotenv
-        load_dotenv()
+        
         aws_access_key = os.getenv("AWS_ACCESS_KEY")
         aws_secret_key = os.getenv("AWS_SECRET_KEY")
         s3_bucket_name = os.getenv("S3_BUCKET_NAME")
