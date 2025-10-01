@@ -148,7 +148,7 @@ The project follows a modular architecture with clear separation of concerns:
 
 ```bash
 # Clone the repository
-git clone <<REPLACE_ME>>
+git clone https://github.com/RisAhamed/MLOPS-project-AWS-K8s-Dashgub
 cd MLOPS-project-AWS-K8s-Dashgub
 
 # Install dependencies
@@ -168,7 +168,7 @@ python app.py
 
 ```bash
 # Clone repository
-git clone <<REPLACE_ME>>
+git clone https://github.com/RisAhamed/MLOPS-project-AWS-K8s-Dashgub
 cd MLOPS-project-AWS-K8s-Dashgub
 
 # Create virtual environment
@@ -186,7 +186,7 @@ python test_environment.py
 
 ```cmd
 # Clone repository
-git clone <<REPLACE_ME>>
+git clone https://github.com/RisAhamed/MLOPS-project-AWS-K8s-Dashgub
 cd MLOPS-project-AWS-K8s-Dashgub
 
 # Create virtual environment
@@ -221,13 +221,13 @@ Create a `.env` file in the project root:
 
 ```bash
 # MLflow/DagsHub Configuration
-MLOPS_PROJECT=<<REPLACE_ME>>  # Your DagsHub token
+MLOPS_PROJECT=   # Your DagsHub token
 
 # AWS Configuration (Optional)
-AWS_ACCESS_KEY=<<REPLACE_ME>>
-AWS_SECRET_KEY=<<REPLACE_ME>>
-S3_BUCKET_NAME=<<REPLACE_ME>>
-S3_DATA_NAME=<<REPLACE_ME>>
+AWS_ACCESS_KEY= 
+AWS_SECRET_KEY = 
+S3_BUCKET_NAME= 
+S3_DATA_NAME= 
 
 # Flask Configuration
 FLASK_ENV=development
@@ -630,7 +630,7 @@ tail -f logs/$(ls -t logs/ | head -1)
 
 ```bash
 # Fork and clone repository
-git clone <<REPLACE_ME>>
+git clone https://github.com/RisAhamed/MLOPS-project-AWS-K8s-Dashgub
 cd MLOPS-project-AWS-K8s-Dashgub
 
 # Create feature branch
@@ -707,5 +707,3 @@ A: Yes, modify the preprocessing functions in `flask_app/app.py`.
 ---
 
 **Maintainer**: Riswan Ahamed  
-**Contact**: <<REPLACE_ME>>  
-**Repository**: <<REPLACE_ME>>
